@@ -27,10 +27,9 @@ def job(socket):
     firstInit = dict()
     firstInit.setdefault("component", "databaseConnector")
     print(firstInit)
-    firstInit = str(firstInit)
+    firstInit = str(firstInit) + "\n"
     
-    socket.send(struct.pack("!H", len(firstInit)))
-    socket.send(firstInit.encode())
+    socket.send(bytes(firstInit, encoding = "utf8"))
     
     #init conn
     conn = pymysql.connect(

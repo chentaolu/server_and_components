@@ -13,5 +13,4 @@ public class mySocket {
     public void setComponent(String component) {
         this.component = component;
     }
-    
 }
