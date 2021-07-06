@@ -11,7 +11,7 @@ public class server {
 
     public static void main(String[] args) throws IOException {
     
-        int port = 1254;
+        int port = 1278;
         ServerSocket ss = new ServerSocket(port);
         while(true) {
             try {
@@ -26,4 +26,8 @@ public class server {
             }
         }
     }
+    /*
+    public static mySocket getSocketByComponent () {
+    	sockets.
+    }*/
 }

@@ -11,7 +11,7 @@ import json
 import  pymysql 
 
 host = '127.0.0.1'
-port = 1254
+port = 1278
 user = 'root'
 password = 'root'
 db = 'sys'
@@ -25,8 +25,10 @@ def connectToData():
 def job(socket):
     #tell server it is db connector
     firstInit = dict()
-    firstInit.setdefault("components", "databaseConnector")
+    firstInit.setdefault("component", "databaseConnector")
+    print(firstInit)
     firstInit = str(firstInit)
+    
     socket.send(struct.pack("!H", len(firstInit)))
     socket.send(firstInit.encode())
     
