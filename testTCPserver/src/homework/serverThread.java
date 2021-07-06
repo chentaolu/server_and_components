@@ -3,6 +3,8 @@ package homework;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.*;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 public class serverThread extends server implements Runnable {
     private Socket socket;
@@ -20,6 +22,14 @@ public class serverThread extends server implements Runnable {
           DataInputStream in = new DataInputStream(socket.getInputStream());
           System.out.flush();
           String object = in.readUTF();
+          try {
+              JSONObject jsonObject = new JSONObject(object);
+        	  
+              
+          } catch (JSONException jsonErr) {
+        	  System.out.print(jsonErr.toString());
+          }
+          
           System.out.println(object);
           server.sockets.get(this.index).getWhichObject(object);
         } catch (IOException e) {
