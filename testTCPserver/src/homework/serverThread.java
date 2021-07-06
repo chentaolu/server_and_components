@@ -24,14 +24,11 @@ public class serverThread extends server implements Runnable {
           String object = in.readUTF();
           try {
               JSONObject jsonObject = new JSONObject(object);
-        	  
-              
+              String component = jsonObject.getString("component");
+        	  server.sockets.get(this.index).setComponent(component);
           } catch (JSONException jsonErr) {
         	  System.out.print(jsonErr.toString());
           }
-          
-          System.out.println(object);
-          server.sockets.get(this.index).getWhichObject(object);
         } catch (IOException e) {
             e.printStackTrace();
         }
