@@ -22,6 +22,16 @@ s.connect((host, port))
 def connectToData():
     json
 """
+
+def insertGameData(insertName):
+    conn = pymysql.connect(
+        host = host, user = user, passwd = password, db = db
+        )
+    cur  =  conn.cursor()
+    Sql = ("INSERT INTO sys.game_data (score, name) VALUES (0, '%d')", insertName)
+    cur.execute(Sql)
+    cur.close()
+
 def job(socket):
     #tell server it is db connector
     firstInit = dict()
@@ -30,12 +40,6 @@ def job(socket):
     firstInit = str(firstInit) + "\n"
     
     socket.send(bytes(firstInit, encoding = "utf8"))
-    
-    #init conn
-    conn = pymysql.connect(
-        host = '127.0.0.1', user = 'root', passwd = 'root', db = 'sys'
-        )
-    cur  =  conn.cursor()
     
     while(True):
         inputString = str(input('input send message')) + '\n'
@@ -54,3 +58,7 @@ while(True):
         print('server closed connection.')
         break
     print('recv: ' + indata.decode())
+    
+    
+    
+
