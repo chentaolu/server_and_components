@@ -16,7 +16,7 @@ host = '127.0.0.1'
 port = 1278
 user = 'root'
 password = 'root'
-db = 'sys'
+db = 'fly_in_nature'
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host, port))
@@ -36,7 +36,7 @@ class GETSQLDATA:
             host = host, user = user, passwd = password, db = db
             )
         cur  =  conn.cursor()
-        Sql = ("INSERT INTO sys.game_data (`money`, `name`) VALUES (0, '%d')", insertName)
+        Sql = ("INSERT INTO fly_in_nature.game_data (`money`, `name`) VALUES (0, '%d')", insertName)
         cur.execute(Sql)
         cur.close()
         
@@ -49,7 +49,7 @@ class GETSQLDATA:
             host = host, user = user, passwd = password, db = db
             )
         cur  =  conn.cursor()
-        Sql = "SELECT `money` FROM sys.game_data WHERE `id` = %d" %(gdid)
+        Sql = "SELECT `money` FROM fly_in_nature.game_data WHERE `id` = %d" %(gdid)
         cur.execute(Sql)
         userScore = cur.fetchall()[0][0]
         cur.close()
@@ -65,7 +65,7 @@ class GETSQLDATA:
             host = host, user = user, passwd = password, db = db
             )
         cur = conn.cursor()
-        Sql = "SELECT `id` FROM sys.game_data WHERE `name` = '%s'" %(userName)
+        Sql = "SELECT `id` FROM fly_in_nature.game_data WHERE `name` = '%s'" %(userName)
         cur.execute(Sql)
         try :
             gdId = cur.fetchall()[0][0]
@@ -85,7 +85,7 @@ class GETSQLDATA:
             host = host, user = user, passwd = password, db = db
             )
         cur = conn.cursor()
-        Sql = "SELECT min(`time`) FROM sys.race_record WHERE `playerId` = %d AND `map` = %d" %(playerId, mapId)
+        Sql = "SELECT min(`time`) FROM fly_in_nature.race_record WHERE `playerId` = %d AND `map` = %d" %(playerId, mapId)
         cur.execute(Sql)
         timeRecord = cur.fetchall()[0][0]
         cur.close()
