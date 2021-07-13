@@ -10,8 +10,6 @@ import struct
 import json
 import  pymysql 
 
-
-
 host = '127.0.0.1'
 port = 1278
 user = 'root'
@@ -25,7 +23,6 @@ def connectToData():
     json
 """
 class GETSQLDATA:
-    
     
     def insertGameData(self, insertName):
         global host
@@ -96,9 +93,9 @@ class GETSQLDATA:
 def job(socket):
     #tell server it is db connector
     firstInit = dict()
-    firstInit.setdefault("component", "databaseConnector")
+    firstInit.setdefault('component', 'databaseConnector')
     print(firstInit)
-    firstInit = str(firstInit) + "\n"
+    firstInit = str(firstInit).replace("\'", "\"") + "\n"
     
     socket.send(bytes(firstInit, encoding = "utf8"))
     
@@ -112,14 +109,23 @@ def job(socket):
 
 sendThread = threading.Thread(target = job , args = (s,))
 sendThread.start()
+data = GETSQLDATA()
 while(True):
-    indata = s.recv(1024)
+    indata = str(s.recv(1024), encoding = 'utf-8')
     if len(indata) == 0: # connection closed
         s.close()
         print('server closed connection.')
         break
-    print('recv: ' + indata.decode())
+    print('recv: ' + indata)
+    array = json.loads(indata)
+    if(array['purpose'] == 'getPlayerId'):
+        result = data.getIdByName(array['parameter'])
+        resultSend = dict()
+        resultSend.setdefault('sendTo', 'player')
     
+    resultSend.setdefault('result', result)
+    print(resultSend)
+    resultSend = str(resultSend).replace("\'", "\"")  + "\n"
     
-    
+    s.send(bytes(resultSend, encoding = "utf8"))
 
