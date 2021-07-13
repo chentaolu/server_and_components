@@ -10,6 +10,8 @@ import struct
 import json
 import  pymysql 
 
+
+
 host = '127.0.0.1'
 port = 1278
 user = 'root'
@@ -22,39 +24,74 @@ s.connect((host, port))
 def connectToData():
     json
 """
-
-def insertGameData(insertName):
-    conn = pymysql.connect(
-        host = host, user = user, passwd = password, db = db
-        )
-    cur  =  conn.cursor()
-    Sql = ("INSERT INTO sys.game_data (`score`, `name`) VALUES (0, '%d')", insertName)
-    cur.execute(Sql)
-    cur.close()
+class GETSQLDATA:
     
-def getScoreById(gdid):
-    conn = pymysql.connect(
-        host = host, user = user, passwd = password, db = db
-        )
-    cur  =  conn.cursor()
-    Sql = "SELECT `score` FROM sys.game_data WHERE `id` = %d" %(gdid)
-    cur.execute(Sql)
-    userScore = cur.fetchall()[0][0]
-    cur.close()
     
-    return userScore
+    def insertGameData(self, insertName):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur  =  conn.cursor()
+        Sql = ("INSERT INTO sys.game_data (`money`, `name`) VALUES (0, '%d')", insertName)
+        cur.execute(Sql)
+        cur.close()
+        
+    def getScoreById(self, gdid):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur  =  conn.cursor()
+        Sql = "SELECT `money` FROM sys.game_data WHERE `id` = %d" %(gdid)
+        cur.execute(Sql)
+        userScore = cur.fetchall()[0][0]
+        cur.close()
+        
+        return userScore
+        
+    def getIdByName(self, userName):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur = conn.cursor()
+        Sql = "SELECT `id` FROM sys.game_data WHERE `name` = '%s'" %(userName)
+        cur.execute(Sql)
+        try :
+            gdId = cur.fetchall()[0][0]
+            cur.close()
+        except IndexError:
+            gdId = -1
+            cur.close()
     
-def getIdByName(userName):
-    conn = pymysql.connect(
-        host = host, user = user, passwd = password, db = db
-        )
-    cur  =  conn.cursor()
-    Sql = "SELECT `id` FROM sys.game_data WHERE `name` = '%s'" %(userName)
-    cur.execute(Sql)
-    gdId = cur.fetchall()[0][0]
-    cur.close()
-
-    return gdId
+        return gdId
+    
+    def getMinTimeRecordByPlayerIdAndMap(self, playerId, mapId):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur = conn.cursor()
+        Sql = "SELECT min(`time`) FROM sys.race_record WHERE `playerId` = %d AND `map` = %d" %(playerId, mapId)
+        cur.execute(Sql)
+        timeRecord = cur.fetchall()[0][0]
+        cur.close()
+        
+        return timeRecord
+    
 
 def job(socket):
     #tell server it is db connector
