@@ -3,12 +3,12 @@
 //
 const int tx = 1;
 const int rx = 0;
-const char* ssid = "TP-Link_B6CC";
-const char* password = "18641851";
+const char* ssid = "ASUS";
+const char* password = "dodo890130";
  
 // Socket Server
-const char* host = "192.168.11.116";
-const int port = 1278;
+const char* host = "192.168.1.102";
+const int port = 5678;
  
 int i = 0;
 char initJSON[] = "{\"component\":\"arduino\"}";
@@ -41,6 +41,6 @@ void loop() {
  
   String Control = client.readStringUntil('\n');
   Serial.println(Control);
-  
+  Serial.println("");
   delay(1000);
 }
