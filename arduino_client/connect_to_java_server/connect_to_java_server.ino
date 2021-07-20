@@ -16,6 +16,7 @@ char initJSON[] = "{\"component\":\"arduino\"}";
 WiFiClient client;
  
 void setup() {
+  pinMode(2, OUTPUT);
   pinMode(rx,INPUT_PULLUP); 
   pinMode(tx,INPUT_PULLUP); 
   Serial.begin(9600);
@@ -38,9 +39,14 @@ void loop() {
   if (!client.connected()) {
     
   }
- 
+  /*
   String Control = client.readStringUntil('\n');
   Serial.println(Control);
-  
-  delay(1000);
+  */
+  Serial.write("light led");
+  digitalWrite(2, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(1000);              // wait for a second
+  digitalWrite(2, LOW);    // turn the LED off by making the voltage LOW
+  delay(1000); 
+  delay(2000);
 }
