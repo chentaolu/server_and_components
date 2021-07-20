@@ -27,6 +27,7 @@ public class serverThread extends server implements Runnable {
 	        out = new PrintWriter(socket.getOutputStream()); 
 	        System.out.flush();
 	        String object = recv.readLine();
+	        System.out.println(object);
 	        try {
 	            JSONObject jsonObject = new JSONObject(object);
 	            String component = jsonObject.getString("component");
@@ -42,6 +43,7 @@ public class serverThread extends server implements Runnable {
         while(true) {
             try {
                 String object = recv.readLine();
+                System.out.println(object);
                 try {
                     JSONObject jsonObject = new JSONObject(object);
                     String sendTo = jsonObject.getString("sendTo");
