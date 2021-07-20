@@ -12,7 +12,7 @@ const char* host = "192.168.1.102";
 const int port = 5678;
  
 int i = 0;
-Unistep2 stepper2(2, 3, 4, 5, 4096, 630);// IN1, IN2, IN3, IN4, 總step數, 每步的延遲(in micros) 
+Unistep2 stepper(2, 3, 4, 5, 4096, 630);// IN1, IN2, IN3, IN4, 總step數, 每步的延遲(in micros) 
 WiFiClient client;
  
 void setup() {
@@ -32,7 +32,7 @@ void setup() {
     client.connect(host, port);
     println()
   }*/
-  stepper2.move(3000); 
+  pinMode(LED_BUILTIN, OUTPUT);
 }
  
 void loop() {
@@ -40,10 +40,27 @@ void loop() {
  //Serial.println("QQ");
   /*String Control = client.readStringUntil('\n');
   Serial.println(Control);*/
-  // stepper2.move(3000);                        //跟COUNT 差17           
-  if(stepper2.stepsToGo() != 0)
+  /*stepper2.move(3000);                        //跟COUNT 差17  
+           
+  while(stepper2.stepsToGo() != 0)
   {     
     stepper2.run();  
-  }
-  delay(100);
+    yield();
+  }*/
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(1000);  
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000); 
 }
+
+/*void inta()               //117=0.1CM
+{
+  //stepper2.move(2340);                        //跟COUNT 差17           
+  stepper.move(-2340);
+  while(stepper.stepsToGo() != 0)
+  {   
+      stepper.run();  
+      yield(); 
+  }
+  delay(10);
+}*/
