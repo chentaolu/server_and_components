@@ -25,7 +25,7 @@ def job(socket):
     socket.send(bytes(firstInit, encoding = "utf8"))
     
     time.sleep(1)
-    
+    """
     fakeAPI = dict()
     name = 'TEST_GAME_SQL4'
     fakeAPI.setdefault('sendTo', 'databaseConnector')
@@ -33,6 +33,12 @@ def job(socket):
     fakeAPI.setdefault('parameter', name)
     fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
     
+    socket.send(bytes(fakeAPI, encoding = "utf8"))
+    """
+    fakeAPI = dict()
+    fakeAPI.setdefault('sendTo', 'centerArduino')
+    fakeAPI.setdefault('fanSpeed', 456789);
+    fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
     socket.send(bytes(fakeAPI, encoding = "utf8"))
     
 
