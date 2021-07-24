@@ -47,6 +47,8 @@ public class serverThread extends server implements Runnable {
                 try {
                     JSONObject jsonObject = new JSONObject(object);
                     String sendTo = jsonObject.getString("sendTo");
+                    jsonObject.remove("sendTo");
+                    object = jsonObject.toString();
                     if (sendTo.equals("databaseConnector")) {
                     	for (mySocket socket : server.sockets) {
                     		if (socket.component.equals("databaseConnector")) {
@@ -66,7 +68,7 @@ public class serverThread extends server implements Runnable {
                     } else if (sendTo.equals("centerArduino")) {
                     	for (mySocket socket : server.sockets) {
                     		if (socket.component.equals("centerArduino")) {
-                    			PrintWriter outToData = new PrintWriter(socket.socket.getOutputStream());
+                    			PrintWriter outToData = new PrintWriter(socket.socket.getOutputStream());  
                     			outToData.println(object);
                     			outToData.flush();
                     		}

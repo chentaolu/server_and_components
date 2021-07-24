@@ -37,7 +37,10 @@ def job(socket):
     """
     fakeAPI = dict()
     fakeAPI.setdefault('sendTo', 'centerArduino')
-    fakeAPI.setdefault('fanSpeed', 456789);
+    fakeAPI.setdefault('fanSpeed', -1);
+    fakeAPI.setdefault('parallelMove', -1);
+    fakeAPI.setdefault('verticalMove', -1);
+    fakeAPI.setdefault('waterSpary', 0);
     fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
     socket.send(bytes(fakeAPI, encoding = "utf8"))
     
