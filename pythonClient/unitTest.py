@@ -24,26 +24,32 @@ def job(socket):
     
     socket.send(bytes(firstInit, encoding = "utf8"))
     
-    time.sleep(1)
-    """
-    fakeAPI = dict()
-    name = 'TEST_GAME_SQL4'
-    fakeAPI.setdefault('sendTo', 'databaseConnector')
-    fakeAPI.setdefault('purpose', 'getPlayerId')
-    fakeAPI.setdefault('parameter', name)
-    fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
-    
-    socket.send(bytes(fakeAPI, encoding = "utf8"))
-    """
-    fakeAPI = dict()
-    fakeAPI.setdefault('sendTo', 'centerArduino')
-    fakeAPI.setdefault('fanSpeed', -1);
-    fakeAPI.setdefault('parallelMove', -1);
-    fakeAPI.setdefault('verticalMove', -1);
-    fakeAPI.setdefault('waterSpary', 0);
-    fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
-    socket.send(bytes(fakeAPI, encoding = "utf8"))
-    
+    while (True) :
+        apiNumber = int(input('input api number :'))
+        if (apiNumber == 0) :
+            fakeAPI = dict()
+            name = 'TEST_GAME_SQL4'
+            fakeAPI.setdefault('sendTo', 'databaseConnector')
+            fakeAPI.setdefault('purpose', 'getPlayerId')
+            fakeAPI.setdefault('parameter', name)
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
+        
+        elif (apiNumber == 1) :
+            fanSpeed = int(input('input fanSpeed :'))
+            parallelMove = int(input('input parallelMove :'))
+            verticalMove = int(input('input verticalMove :'))
+            waterSpary = int(input('input waterSpary :'))
+            fakeAPI = dict()
+            fakeAPI.setdefault('sendTo', 'centerArduino')
+            fakeAPI.setdefault('fanSpeed', fanSpeed);
+            fakeAPI.setdefault('parallelMove', parallelMove);
+            fakeAPI.setdefault('verticalMove', verticalMove);
+            fakeAPI.setdefault('waterSpary', waterSpary);
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
+        
 
 sendThread = threading.Thread(target = job , args = (s,))
 sendThread.start()
