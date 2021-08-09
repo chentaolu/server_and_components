@@ -22,7 +22,7 @@ s.connect((host, port))
 def connectToData():
     json
 """
-class GETSQLDATA:
+class GetSqlData:
     
     def insertGameData(self, insertName):
         global host
@@ -36,6 +36,7 @@ class GETSQLDATA:
         Sql = ("INSERT INTO fly_in_nature.game_data (`money`, `name`) VALUES (0, '%d')", insertName)
         cur.execute(Sql)
         cur.close()
+        conn.close()
         
     def getScoreById(self, gdid):
         global host
@@ -50,7 +51,7 @@ class GETSQLDATA:
         cur.execute(Sql)
         userScore = cur.fetchall()[0][0]
         cur.close()
-        
+        conn.close()
         return userScore
         
     def getIdByName(self, userName):
@@ -66,11 +67,11 @@ class GETSQLDATA:
         cur.execute(Sql)
         try :
             gdId = cur.fetchall()[0][0]
-            cur.close()
         except IndexError:
             gdId = -1
+        finally:
             cur.close()
-    
+            conn.close()
         return gdId
     
     def getMinTimeRecordByPlayerIdAndMap(self, playerId, mapId):
@@ -86,9 +87,25 @@ class GETSQLDATA:
         cur.execute(Sql)
         timeRecord = cur.fetchall()[0][0]
         cur.close()
-        
+        conn.close()
         return timeRecord
     
+class StoreNewData:
+    
+    def storeNewUser(self, playerName):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur = conn.cursor()
+        Sql = "INSERT INTO fly_in_nature.game_data (`money`, `name`) VALUES (0, '%s')" %(playerName)
+        cur.execute(Sql)
+        cur.close()
+        conn.close()
+
 
 def job(socket):
     #tell server it is db connector
@@ -109,7 +126,8 @@ def job(socket):
 
 sendThread = threading.Thread(target = job , args = (s,))
 sendThread.start()
-data = GETSQLDATA()
+getData = GetSqlData()
+insertData = StoreNewData()
 while(True):
     indata = str(s.recv(1024), encoding = 'utf-8')
     if len(indata) == 0: # connection closed
@@ -118,14 +136,20 @@ while(True):
         break
     print('recv: ' + indata)
     array = json.loads(indata)
+    resultSend = dict()
     if(array['purpose'] == 'getPlayerId'):
-        result = data.getIdByName(array['parameter'])
-        resultSend = dict()
+        result = getData.getIdByName(array['parameter'])
         resultSend.setdefault('sendTo', 'player')
+        resultSend.setdefault('result', result)
     
-    resultSend.setdefault('result', result)
+    elif(array['purpose'] == 'newUser'):
+        insertData.storeNewUser(array['newUserName'])
+        resultSend.setdefault('sendTo', 'player')
+        resultSend.setdefault('result', 'success')
+    
     print(resultSend)
     resultSend = str(resultSend).replace("\'", "\"")  + "\n"
     
     s.send(bytes(resultSend, encoding = "utf8"))
+        
 
