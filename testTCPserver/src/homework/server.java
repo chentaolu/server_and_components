@@ -26,8 +26,4 @@ public class server {
             }
         }
     }
-    /*
-    public static mySocket getSocketByComponent () {
-    	sockets.
-    }*/
 }

@@ -26,6 +26,7 @@ def job(socket):
     
     while (True) :
         apiNumber = int(input('input api number :'))
+        # test get player id
         if (apiNumber == 0) :
             fakeAPI = dict()
             name = 'TEST_GAME_SQL4'
@@ -36,6 +37,7 @@ def job(socket):
             
             socket.send(bytes(fakeAPI, encoding = "utf8"))
         
+        # test android fan test
         elif (apiNumber == 1) :
             fanSpeed = int(input('input fanSpeed :'))
             parallelMove = int(input('input parallelMove :'))
@@ -49,7 +51,18 @@ def job(socket):
             fakeAPI.setdefault('waterSpary', waterSpary);
             fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
             socket.send(bytes(fakeAPI, encoding = "utf8"))
-        
+            
+        elif (apiNumber == 2):
+            userName = str(input('input user name :'))
+            fakeAPI = dict()
+            fakeAPI.setdefault('sendTo', 'databaseConnector')
+            fakeAPI.setdefault('purpose', 'registUser')
+            fakeAPI.setdefault('userName', userName)
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
+            
+        elif (apiNumber == 99):
+            socket.close()
 
 sendThread = threading.Thread(target = job , args = (s,))
 sendThread.start()
