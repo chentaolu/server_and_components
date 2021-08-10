@@ -35,3 +35,4 @@ sql = 'CREATE TABLE `Race_Record` (' + \
 
 cur.execute(sql)
 cur.close()
+conn.close()

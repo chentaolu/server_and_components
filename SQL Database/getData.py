@@ -24,7 +24,7 @@ def connectToData():
 """
 class GetSqlData:
     
-    def insertGameData(self, insertName):
+    def checkNameExists(self, userName):
         global host
         global user
         global password
@@ -33,10 +33,14 @@ class GetSqlData:
             host = host, user = user, passwd = password, db = db
             )
         cur  =  conn.cursor()
-        Sql = ("INSERT INTO fly_in_nature.game_data (`money`, `name`) VALUES (0, '%d')", insertName)
+        Sql = "SELECT case WHEN EXISTS ( \
+                   SELECT 1 FROM fly_in_nature.game_data WHERE `name` = '%s' LIMIT 1 \
+                ) THEN True ELSE False END" %(userName)
         cur.execute(Sql)
+        isUserExists = bool(cur.fetchall()[0][0])
         cur.close()
         conn.close()
+        return isUserExists
         
     def getScoreById(self, gdid):
         global host
@@ -103,6 +107,7 @@ class StoreNewData:
         cur = conn.cursor()
         Sql = "INSERT INTO fly_in_nature.game_data (`money`, `name`) VALUES (0, '%s')" %(playerName)
         cur.execute(Sql)
+        conn.commit()
         cur.close()
         conn.close()
 
@@ -117,12 +122,10 @@ def job(socket):
     socket.send(bytes(firstInit, encoding = "utf8"))
     
     while(True):
-        inputString = str(input('input send message')) + '\n'
-        inputSize = len(inputString)
-        if inputString is not None:
-            print(inputString)
-            socket.send(struct.pack("!H", inputSize))
-            socket.send(inputString.encode())
+        inputString = str(input('input send message'))
+        if inputString == 'q':
+            print("quit")
+            socket.close()
 
 sendThread = threading.Thread(target = job , args = (s,))
 sendThread.start()
@@ -142,10 +145,14 @@ while(True):
         resultSend.setdefault('sendTo', 'player')
         resultSend.setdefault('result', result)
     
-    elif(array['purpose'] == 'newUser'):
-        insertData.storeNewUser(array['newUserName'])
-        resultSend.setdefault('sendTo', 'player')
-        resultSend.setdefault('result', 'success')
+    elif(array['purpose'] == 'registUser'):
+        if(getData.checkNameExists(array['userName'])) :
+            resultSend.setdefault('sendTo', 'player')
+            resultSend.setdefault('result', 'failure')
+        else :
+            insertData.storeNewUser(array['userName'])
+            resultSend.setdefault('sendTo', 'player')
+            resultSend.setdefault('result', 'success')
     
     print(resultSend)
     resultSend = str(resultSend).replace("\'", "\"")  + "\n"
