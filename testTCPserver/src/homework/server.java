@@ -11,7 +11,7 @@ public class server {
 
     public static void main(String[] args) throws IOException {
     
-        int port = 1278;
+        int port = 5678;
         ServerSocket ss = new ServerSocket(port);
         while(true) {
             try {
