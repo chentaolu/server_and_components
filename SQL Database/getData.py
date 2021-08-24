@@ -11,7 +11,7 @@ import json
 import  pymysql 
 
 host = '127.0.0.1'
-port = 1278
+port = 5678
 user = 'root'
 password = 'root'
 db = 'fly_in_nature'
