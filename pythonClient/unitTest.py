@@ -10,7 +10,7 @@ import threading
 import time
 
 host = '127.0.0.1'
-port = 1278
+port = 5678
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host, port))
@@ -61,7 +61,16 @@ def job(socket):
             fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
             socket.send(bytes(fakeAPI, encoding = "utf8"))
             
-        elif (apiNumber == 99):
+        elif (apiNumber == 3):
+            userName = str(input('input user name :'))
+            fakeAPI = dict()
+            fakeAPI.setdefault('sendTo', 'databaseConnector')
+            fakeAPI.setdefault('purpose', 'login')
+            fakeAPI.setdefault('userName', userName)
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
+            
+        elif (apiNumber == 99) :
             socket.close()
 
 sendThread = threading.Thread(target = job , args = (s,))
@@ -70,6 +79,7 @@ while(True):
     indata = str(s.recv(1024), encoding = 'utf-8')
     if len(indata) == 0: # connection closed
         s.close()
+        sendThread.terminate()
         print('server closed connection.')
         break
     print('recv: ' + indata)

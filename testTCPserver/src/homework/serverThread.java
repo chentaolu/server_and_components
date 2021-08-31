@@ -35,6 +35,7 @@ public class serverThread extends server implements Runnable {
 	        	server.sockets.get(this.index).setComponent(component);
 	        } catch (JSONException jsonErr) {
 	        	System.out.print(jsonErr.toString());
+	        	socket.close();
 	        }
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,7 +61,6 @@ public class serverThread extends server implements Runnable {
                     
                 } catch (JSONException jsonErr) {
               	  	System.out.print("Format error please check again !!");
-              	  	
                 }
             } catch (IOException e) {
             	e.printStackTrace();

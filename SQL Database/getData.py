@@ -18,10 +18,37 @@ db = 'fly_in_nature'
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host, port))
-"""
-def connectToData():
-    json
-"""
+
+class Broom:
+    id = int()
+    name = str()
+    speed = int()
+    price = int()
+    def setId(self, id):
+        self.id = id
+        
+    def setName(self, name):
+        self.name = name
+        
+    def setSpeed(self, speed):
+        self.speed = speed
+        
+    def setPrice(self, price):
+        self.price = price
+        
+    def getId(self):
+        return self.id
+    
+    def getName(self):
+        return self.name
+    
+    def getSpeed(self):
+        return self.speed
+    
+    def getPrice(self):
+        return self.price
+    
+
 class GetSqlData:
     
     def checkNameExists(self, userName):
@@ -94,6 +121,58 @@ class GetSqlData:
         conn.close()
         return timeRecord
     
+    def getBroomList(self):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur = conn.cursor()
+        Sql = "SELECT * FROM fly_in_nature.broom"
+        cur.execute(Sql)
+        broomDataList = cur.fetchall()
+        
+        broomList = list()
+        for broomData in broomDataList:
+            broom = Broom()
+            broom.setId(broomData[0])
+            broom.setName(broomData[1])
+            broom.setSpeed(broomData[2])
+            broom.setPrice(broomData[3])
+            broomList.append(broom)
+        
+        cur.close()
+        conn.close()
+        return broomList
+    
+    def getPurchaseRecord(self, playerId):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur = conn.cursor()
+        Sql = "SELECT * FROM fly_in_nature.purchase_record WHERE `playerId` = %d" %(playerId)
+        cur.execute(Sql)
+        broomDataList = cur.fetchall()
+        
+        broomList = list()
+        for broomData in broomDataList:
+            broom = Broom()
+            broom.setId(broomData[0])
+            broom.setName(broomData[1])
+            broom.setSpeed(broomData[2])
+            broom.setPrice(broomData[3])
+            broomList.append(broom)
+        
+        cur.close()
+        conn.close()
+        return broomList
+    
 class StoreNewData:
     
     def storeNewUser(self, playerName):
@@ -110,7 +189,29 @@ class StoreNewData:
         conn.commit()
         cur.close()
         conn.close()
-
+        
+    def createNewPurchaseRecord(self, playerId, broomList):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
+        cur = conn.cursor()
+        for broom in broomList:
+            
+            if(broom.getId() == 1) :
+                Sql = "INSERT INTO fly_in_nature.purchase_record (`playerId`, `broomId`, `purchase`) VALUES (%d, %d, %d)" %(playerId, broom.getId(), 1)
+                
+            else :
+                Sql = "INSERT INTO fly_in_nature.purchase_record (`playerId`, `broomId`, `purchase`) VALUES (%d, %d, %d)" %(playerId, broom.getId(), 0)
+                
+            cur.execute(Sql)
+            conn.commit()
+        
+        cur.close()
+        conn.close()
 
 def job(socket):
     #tell server it is db connector
@@ -151,8 +252,20 @@ while(True):
             resultSend.setdefault('result', 'failure')
         else :
             insertData.storeNewUser(array['userName'])
+            playerId = getData.getIdByName(array['userName'])
+            print(playerId)
+            broomList = getData.getBroomList()
+            insertData.createNewPurchaseRecord(playerId, broomList)
             resultSend.setdefault('sendTo', 'player')
             resultSend.setdefault('result', 'success')
+    
+    elif(array['purpose'] == 'login'):
+        if(getData.checkNameExists(array['userName'])) :
+            resultSend.setdefault('sendTo', 'player')
+            resultSend.setdefault('login', 'success')
+        else:
+            resultSend.setdefault('sendTo', 'player')
+            resultSend.setdefault('login', 'failure')    
     
     print(resultSend)
     resultSend = str(resultSend).replace("\'", "\"")  + "\n"

@@ -38,17 +38,29 @@ def job(socket):
     print(firstInit)
     firstInit = str(firstInit).replace("\'", "\"") + "\n"
     socket.send(bytes(firstInit, encoding = "utf8"))
+    originSpeed = -1
     while(True):
         if(not dataQueue.IsEmpty()):
             result = dict()
-            
             currentData = dataQueue.Pop()
-            fanSpeed = int(currentData['CurrentSpeed']) // 10
-            result.setdefault('sendTo', 'centerArduino')
-            result.setdefault('fanSpeed', fanSpeed)
-            result = str(result).replace("\'", "\"") + "\n"
-            socket.send(bytes(result, encoding = "utf8"))
             
+            if (originSpeed == -1) :
+                fanSpeed = int(currentData['CurrentSpeed']) // 10
+                
+                result.setdefault('sendTo', currentData['speedChange'])
+                result.setdefault('fanSpeed', fanSpeed)
+                
+                result = str(result).replace("\'", "\"") + "\n"
+                socket.send(bytes(result, encoding = "utf8"))
+                originSpeed = fanSpeed
+            else :
+                fanSpeed = int(currentData['CurrentSpeed']) // 10
+                if (originSpeed != fanSpeed) :
+                    result.setdefault('sendTo', currentData['speedChange'])
+                    result.setdefault('fanSpeed', fanSpeed)
+                    result = str(result).replace("\'", "\"") + "\n"
+                    socket.send(bytes(result, encoding = "utf8"))
+                    originSpeed = fanSpeed
 
 sendThread = threading.Thread(target = job , args = (s,))
 sendThread.start()
