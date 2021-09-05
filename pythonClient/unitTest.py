@@ -70,6 +70,15 @@ def job(socket):
             fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
             socket.send(bytes(fakeAPI, encoding = "utf8"))
             
+        elif (apiNumber == 4):
+            
+            fakeAPI = dict()
+            fakeAPI.setdefault('sendTo', 'databaseConnector')
+            fakeAPI.setdefault('purpose', 'getGameRecord')
+            fakeAPI.setdefault('playerId', 2)
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
+        
         elif (apiNumber == 99) :
             socket.close()
 

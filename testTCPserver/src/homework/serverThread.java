@@ -59,8 +59,10 @@ public class serverThread extends server implements Runnable {
                 		}
                 	}
                     
-                } catch (JSONException jsonErr) {
+                } catch (Exception e) {
               	  	System.out.print("Format error please check again !!");
+              	  	e.printStackTrace();
+              	  	break;
                 }
             } catch (IOException e) {
             	e.printStackTrace();
