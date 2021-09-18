@@ -74,8 +74,19 @@ def job(socket):
             
             fakeAPI = dict()
             fakeAPI.setdefault('sendTo', 'databaseConnector')
-            fakeAPI.setdefault('purpose', 'getGameRecord')
+            fakeAPI.setdefault('purpose', 'getGameRecords')
             fakeAPI.setdefault('playerId', 2)
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
+            
+        elif (apiNumber == 5):
+            
+            fakeAPI = dict()
+            fakeAPI.setdefault('sendTo', 'database4Connector')
+            fakeAPI.setdefault('purpose', 'storeGameRecord')
+            fakeAPI.setdefault('playerId', 2)
+            fakeAPI.setdefault('mapId', 1)
+            fakeAPI.setdefault('time', '00:00:40.71')
             fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
             socket.send(bytes(fakeAPI, encoding = "utf8"))
         

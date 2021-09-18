@@ -263,7 +263,31 @@ class GetSqlData:
             PlayerMapRecordList.append(record)
             
         return PlayerMapRecordList
+    
+    def getMapRecordByMapIdAndPlayerId(self, playerId, mapId):
+        global host
+        global user
+        global password
+        global db
+        conn = pymysql.connect(
+            host = host, user = user, passwd = password, db = db
+            )
         
+        cur = conn.cursor()
+        Sql = "SELECT * FROM fly_in_nature.race_record WHERE `playerId` = %d AND `mapId` = %d" %(playerId, mapId)
+        cur.execute(Sql)
+        playerMapData = cur.fetchall()
+        
+        cur.close()
+        conn.close()
+        
+        
+        record = RaceRecord()
+        record.setPlayerId(playerMapData[0][1])
+        record.setMapId(playerMapData[0][2])
+        record.setTimeRecord(playerMapData[0][3])
+            
+        return record
 
     
 class StoreNewData:
@@ -428,24 +452,33 @@ while(True):
             
     elif(array['purpose'] == 'storeGameRecord') :
         try :
-            nowRecord = getData.getAllMapRecord(array['playerId'])
-            if (nowRecord > array['time']) :
+            nowRecord = getData.getMapRecordByMapIdAndPlayerId(array['playerId'], array['mapId'])
+            insertData.updateMoney(array['playerId'], getData.getCurrentMoney(array['playerId']))
+            localDateTime = datetime.min
+            DateTimeFormat = localDateTime + nowRecord.getTimeRecord()
+            if (DateTimeFormat > datetime.strptime("0001-01-01 " + array['time'], "%Y-%m-%d %H:%M:%S.%f") or DateTimeFormat == datetime.strptime("0001-01-01 00:00:00.0", "%Y-%m-%d %H:%M:%S.%f")) :
                 insertData.updateNewRaceRecord(array['playerId'], array['mapId'], array['time'])
-                insertData.updateMoney(array['playerId'], getData.getCurrentMoney(array['playerId']))
+                
             resultSend.setdefault('sendTo', 'player')
             resultSend.setdefault('store', 'success')
+            
         except pymysql.Error:
             resultSend.setdefault('sendTo', 'player')
             resultSend.setdefault('server', 'error')
     
-    elif(array['purpose'] == 'getGameRecord') :
+    elif(array['purpose'] == 'getGameRecords') :
         try :
             resultSend.setdefault('sendTo', 'player')
+            mapsRecord = list()
             localDateTime = datetime.min
             playerMapRecordList = getData.getAllMapRecord(array['playerId'])
             for playerMapRecord in playerMapRecordList:
                 DateTimeFormat = localDateTime + playerMapRecord.getTimeRecord()
-                resultSend.setdefault(str(playerMapRecord.getMapId()), DateTimeFormat.strftime("%H:%M:%S.%f")[:11])
+                records = dict()
+                records.setdefault(str(playerMapRecord.getMapId()), DateTimeFormat.strftime("%H:%M:%S.%f")[:11])
+                mapsRecord.append(records)
+                
+            resultSend.setdefault('gameRecords', mapsRecord)
             
         except pymysql.Error:
             resultSend.setdefault('sendTo', 'player')
