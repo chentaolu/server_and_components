@@ -185,6 +185,7 @@ def job(socket):
                     rightMovement = getRightLocation(playerToFanVector)
                     
                     if(topMovement[0] <= 20 and topMovement[0] >= -20 and topMovement[1] <= 20 and topMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'topArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
@@ -194,6 +195,7 @@ def job(socket):
                         socket.send(bytes(result, encoding = "utf8"))
                     
                     if(rightMovement[0] <= 20 and rightMovement[0] >= -20 and rightMovement[1] <= 20 and rightMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'rightArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
@@ -207,6 +209,7 @@ def job(socket):
                     leftMovement = getLeftLocation(playerToFanVector)
                     
                     if(topMovement[0] <= 20 and topMovement[0] >= -20 and topMovement[1] <= 20 and topMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'topArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
@@ -216,6 +219,7 @@ def job(socket):
                         socket.send(bytes(result, encoding = "utf8"))
                     
                     if(leftMovement[0] <= 20 and leftMovement[0] >= -20 and leftMovement[1] <= 20 and leftMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'leftArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
@@ -229,6 +233,7 @@ def job(socket):
                     leftMovement = getLeftLocation(playerToFanVector)
                     
                     if(downMovement[0] <= 20 and downMovement[0] >= -20 and downMovement[1] <= 20 and downMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'downArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
@@ -238,6 +243,7 @@ def job(socket):
                         socket.send(bytes(result, encoding = "utf8"))
                     
                     if(leftMovement[0] <= 20 and leftMovement[0] >= -20 and leftMovement[1] <= 20 and leftMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'leftArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
@@ -251,6 +257,7 @@ def job(socket):
                     rightMovement = getRightLocation(playerToFanVector)
                     
                     if(downMovement[0] <= 20 and downMovement[0] >= -20 and downMovement[1] <= 20 and downMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'downArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
@@ -260,6 +267,7 @@ def job(socket):
                         socket.send(bytes(result, encoding = "utf8"))
                     
                     if(rightMovement[0] <= 20 and rightMovement[0] >= -20 and rightMovement[1] <= 20 and rightMovement[1] >= 20):
+                        result = dict()
                         result.setdefault('sendTo', 'rightArduino')
                         
                         result.setdefault('fanSpeed', fanSpeed)
