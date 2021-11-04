@@ -12,6 +12,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from numba import jit
 from numpy.linalg import inv
+import math
 
 
 host = '127.0.0.1'
@@ -40,6 +41,85 @@ def calculateLength(x, y, z):
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host, port))
 dataQueue = Queue()
+
+def getLeftLocation(playerToFanVector):
+    OriginPoint = np.array([-30, 28, 30])
+
+    NomalVextor = np.array([1, 0, -1])
+    
+    Constant = (NomalVextor[0] * OriginPoint[0] + NomalVextor[1] * OriginPoint[1] + NomalVextor[2] * OriginPoint[2]) * -1
+    
+    multiple = -1 * Constant / (NomalVextor[0] * playerToFanVector[0] + NomalVextor[1] * playerToFanVector[1] + NomalVextor[2] * playerToFanVector[2])
+    
+    playerToFanVectorWithMult = playerToFanVector * multiple
+    
+    playerToFanRealLocationIn3D = playerToFanVectorWithMult - OriginPoint
+    
+    leftBasis = np.array([[1, 0, 1], [0, 1, 0]])
+
+    moveFan = leftBasis.dot(playerToFanRealLocationIn3D.T)
+    
+    return moveFan
+
+def getRightLocation(playerToFanVector):
+    
+    OriginPoint = np.array([30, 28, 30])
+
+    NomalVextor = np.array([1, 0, 1])
+    
+    Constant = (NomalVextor[0] * OriginPoint[0] + NomalVextor[1] * OriginPoint[1] + NomalVextor[2] * OriginPoint[2]) * -1
+    
+    multiple = -1 * Constant / (NomalVextor[0] * playerToFanVector[0] + NomalVextor[1] * playerToFanVector[1] + NomalVextor[2] * playerToFanVector[2])
+    
+    playerToFanVectorWithMult = playerToFanVector * multiple
+    
+    playerToFanRealLocationIn3D = playerToFanVectorWithMult - OriginPoint
+    
+    leftBasis = np.array([[1, 0, -1], [0, 1, 0]])
+
+    moveFan = leftBasis.dot(playerToFanRealLocationIn3D.T)
+    
+    return moveFan
+
+def getTopLocation(playerToFanVector):
+    
+    OriginPoint = np.array([0, 28, 30])
+
+    NomalVextor = np.array([0, 1, 1])
+    
+    Constant = (NomalVextor[0] * OriginPoint[0] + NomalVextor[1] * OriginPoint[1] + NomalVextor[2] * OriginPoint[2]) * -1
+    
+    multiple = -1 * Constant / (NomalVextor[0] * playerToFanVector[0] + NomalVextor[1] * playerToFanVector[1] + NomalVextor[2] * playerToFanVector[2])
+    
+    playerToFanVectorWithMult = playerToFanVector * multiple
+    
+    playerToFanRealLocationIn3D = playerToFanVectorWithMult - OriginPoint
+    
+    leftBasis = np.array([[1, 0, 0], [0, 1, -1]])
+
+    moveFan = leftBasis.dot(playerToFanRealLocationIn3D.T)
+    
+    return moveFan
+
+def getDownLocation(playerToFanVector):
+    
+    leftOriginPoint = np.array([0, -47, 30])
+
+    leftNomalVextor = np.array([0, 1, -1])
+    
+    leftConstant = (leftNomalVextor[0] * leftOriginPoint[0] + leftNomalVextor[1] * leftOriginPoint[1] + leftNomalVextor[2] * leftOriginPoint[2]) * -1
+    
+    multiple = -1 * leftConstant / (leftNomalVextor[0] * playerToFanVector[0] + leftNomalVextor[1] * playerToFanVector[1] + leftNomalVextor[2] * playerToFanVector[2])
+    
+    playerToFanVectorWithMult = playerToFanVector * multiple
+    
+    playerToFanRealLocationIn3D = playerToFanVectorWithMult - leftOriginPoint
+    
+    leftBasis = np.array([[1, 0, 0], [0, 1, 1]])
+
+    moveFan = leftBasis.dot(playerToFanRealLocationIn3D.T)
+    
+    return moveFan
 
 
 def job(socket):
@@ -75,20 +155,122 @@ def job(socket):
                         originSpeed = fanSpeed
                         
             elif(currentData['speedChange'] == 'otherArduino') :
-                r = R.from_quat([currentData['Quaternions']['x'], currentData['Quaternions']['y'], currentData['Quaternions']['z'], currentData['Quaternions']['w']])
-                rotationMatrix = inv(r.as_matrix())
-                newXAxis = rotationMatrix.dot(np.array([1, 0, 0]).T)
-                newYAxis = rotationMatrix.dot(np.array([0, 1, 0]).T)
-                newZAxis = rotationMatrix.dot(np.array([0, 0, 1]).T)
-                BMatrix = np.column_stack([list(newXAxis), list(newYAxis), list(newZAxis)]).T
-                currentFanLocation = np.array([currentData['fanLocation']['x'], currentData['fanLocation']['y'], currentData['fanLocation']['z']]).T
-                newFanLocation = np.linalg.inv(BMatrix).dot(currentFanLocation)
                 
                 fanSpeed = (calculateLength(currentData['fanLocation']['x'] - currentData['currentLocation']['x'], currentData['fanLocation']['y'] - currentData['currentLocation']['y'], currentData['fanLocation']['z'] - currentData['currentLocation']['z']) // 200) * 100
                 
-                result.setdefault('fanSpeed', fanSpeed)
-                result = str(result).replace("\'", "\"") + "\n"
-                socket.send(bytes(result, encoding = "utf8"))
+                
+                r = R.from_quat([currentData['Quaternions']['x'], currentData['Quaternions']['y'], currentData['Quaternions']['z'], currentData['Quaternions']['w']])
+                rotationMatrix = r.as_matrix()
+                currentFanLocation = np.array([currentData['fanLocation']['x'], currentData['fanLocation']['y'], currentData['fanLocation']['z']]).T
+                newFanLocation = rotationMatrix.dot(currentFanLocation.T)
+                
+                currentPlayerLocation = np.array([currentData['playerLocation']['x'], currentData['playerLocation']['y'], currentData['playerLocation']['z']])
+                newPlayerLocation = rotationMatrix.dot(currentPlayerLocation.T)
+                
+                playerToFanVector = newFanLocation - newPlayerLocation
+                
+                case = 0
+                
+                if(playerToFanVector[0] >= 0 and playerToFanVector[1] >= 0) :
+                    case = 1
+                elif(playerToFanVector[0] < 0 and playerToFanVector[1] > 0) :
+                    case = 2
+                elif(playerToFanVector[0] < 0 and playerToFanVector[1] < 0) :
+                    case = 3
+                elif(playerToFanVector[0] > 0 and playerToFanVector[1] < 0) :
+                    case = 4
+                
+                if(case == 1):
+                    topMovement = getTopLocation(playerToFanVector)
+                    rightMovement = getRightLocation(playerToFanVector)
+                    
+                    if(topMovement[0] <= 20 and topMovement[0] >= -20 and topMovement[1] <= 20 and topMovement[1] >= 20):
+                        result.setdefault('sendTo', 'topArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', topMovement[1])
+                        result.setdefault('parallelMove', topMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                    
+                    if(rightMovement[0] <= 20 and rightMovement[0] >= -20 and rightMovement[1] <= 20 and rightMovement[1] >= 20):
+                        result.setdefault('sendTo', 'rightArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', rightMovement[1])
+                        result.setdefault('parallelMove', rightMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                        
+                elif(case == 2):
+                    topMovement = getTopLocation(playerToFanVector)
+                    leftMovement = getLeftLocation(playerToFanVector)
+                    
+                    if(topMovement[0] <= 20 and topMovement[0] >= -20 and topMovement[1] <= 20 and topMovement[1] >= 20):
+                        result.setdefault('sendTo', 'topArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', topMovement[1])
+                        result.setdefault('parallelMove', topMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                    
+                    if(leftMovement[0] <= 20 and leftMovement[0] >= -20 and leftMovement[1] <= 20 and leftMovement[1] >= 20):
+                        result.setdefault('sendTo', 'leftArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', leftMovement[1])
+                        result.setdefault('parallelMove', leftMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                
+                elif(case == 3):
+                    downMovement = getDownLocation(playerToFanVector)
+                    leftMovement = getLeftLocation(playerToFanVector)
+                    
+                    if(downMovement[0] <= 20 and downMovement[0] >= -20 and downMovement[1] <= 20 and downMovement[1] >= 20):
+                        result.setdefault('sendTo', 'downArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', downMovement[1])
+                        result.setdefault('parallelMove', downMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                    
+                    if(leftMovement[0] <= 20 and leftMovement[0] >= -20 and leftMovement[1] <= 20 and leftMovement[1] >= 20):
+                        result.setdefault('sendTo', 'leftArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', leftMovement[1])
+                        result.setdefault('parallelMove', leftMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                        
+                elif(case == 4):
+                    downMovement = getDownLocation(playerToFanVector)
+                    rightMovement = getRightLocation(playerToFanVector)
+                    
+                    if(downMovement[0] <= 20 and downMovement[0] >= -20 and downMovement[1] <= 20 and downMovement[1] >= 20):
+                        result.setdefault('sendTo', 'downArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', downMovement[1])
+                        result.setdefault('parallelMove', downMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                    
+                    if(rightMovement[0] <= 20 and rightMovement[0] >= -20 and rightMovement[1] <= 20 and rightMovement[1] >= 20):
+                        result.setdefault('sendTo', 'rightArduino')
+                        
+                        result.setdefault('fanSpeed', fanSpeed)
+                        result.setdefault('verticalMove', rightMovement[1])
+                        result.setdefault('parallelMove', rightMovement[0])
+                        result = str(result).replace("\'", "\"") + "\n"
+                        socket.send(bytes(result, encoding = "utf8"))
+                
+                
+                
+                
                 
                 
 sendThread = threading.Thread(target = job , args = (s,))
