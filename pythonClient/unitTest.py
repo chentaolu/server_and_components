@@ -89,7 +89,32 @@ def job(socket):
             fakeAPI.setdefault('time', '00:00:40.71')
             fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
             socket.send(bytes(fakeAPI, encoding = "utf8"))
-        
+            
+        elif(apiNumber == 6):
+            fakeAPI = dict()
+            fakeAPI.setdefault('sendTo', 'calculator')
+            fakeAPI.setdefault('speedChange', 'otherArduino')
+            fanDetail = dict()
+            fanDetail.setdefault('x', 2555.5)
+            fanDetail.setdefault('y', 106.5)
+            fanDetail.setdefault('z', 1455.4)
+            fakeAPI.setdefault('fanLocation', fanDetail)
+            playerDetail = dict()
+            playerDetail.setdefault('x', 2583.73779)
+            playerDetail.setdefault('y', 106.495552)
+            playerDetail.setdefault('z', 1467.221)
+            fakeAPI.setdefault('playerLocation', playerDetail)
+            quaternionsDetail = dict()
+            quaternionsDetail.setdefault('x', 6.174697E-05)
+            quaternionsDetail.setdefault('y', 0.730438054)
+            quaternionsDetail.setdefault('z', -5.38078566E-05)
+            quaternionsDetail.setdefault('w', -0.682979)
+            fakeAPI.setdefault('Quaternions', quaternionsDetail)
+            print(fakeAPI)
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
+            
+            
         elif (apiNumber == 99) :
             socket.close()
 
