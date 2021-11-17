@@ -38,22 +38,41 @@ class FanDetail:
     inputTime = time.time()
     fanSpeed = int()
     whichFan = str()
+    verticalMove = int()
+    parallelMove = int()
     
     def __init__(self, whichFan):
         self.whichFan = whichFan
     
-    def needToChange(self, newSpeed):
-        if(self.fanSpeed <= newSpeed) :
-            return True
-        else:
+    def needToChange(self, newSpeed, newVerticalMove, newParallelMove, currentTime):
+        if(newVerticalMove == self.verticalMove and newParallelMove == self.parallelMove and newSpeed == self.fanSpeed) :
+            self.inputTime = currentTime
             return False
         
+        if(newVerticalMove != self.verticalMove or newParallelMove != self.parallelMove) :
+            self.inputTime = currentTime
+            self.fanSpeed = newSpeed
+            self.verticalMove = newVerticalMove
+            self.parallelMove = newParallelMove
+            
+            return True
+        else :
+            if(newSpeed <= self.fanSpeed) :
+                self.inputTime = currentTime
+                self.fanSpeed = newSpeed
+                self.verticalMove = newVerticalMove
+                self.parallelMove = newParallelMove
+                
+                return True
+            else :
+                return False
     def makeRecoverDict(self) :
         result = dict()
         result.setdefault('sendTo', self.whichFan)
         result.setdefault('fanSpeed', 0)
         result.setdefault('verticalMove', 0)
         result.setdefault('parallelMove', 0)
+        result.setdefault('waterSpary', -1)
         return result
         
 @jit(nopython=True)
@@ -180,13 +199,14 @@ def job(socket):
                     if (originSpeed != fanSpeed) :
                         result.setdefault('sendTo', currentData['speedChange'])
                         result.setdefault('fanSpeed', fanSpeed)
+                        
                         result = str(result).replace("\'", "\"") + "\n"
                         socket.send(bytes(result, encoding = "utf8"))
                         originSpeed = fanSpeed
                         
             elif(currentData['speedChange'] == 'otherArduino') :
-                
-                fanSpeed = 100 - (calculateLength(currentData['fanLocation']['x'] - currentData['playerLocation']['x'], currentData['fanLocation']['y'] - currentData['playerLocation']['y'], currentData['fanLocation']['z'] - currentData['playerLocation']['z']) // 150) * 100
+                print(calculateLength(currentData['fanLocation']['x'] - currentData['playerLocation']['x'], currentData['fanLocation']['y'] - currentData['playerLocation']['y'], currentData['fanLocation']['z'] - currentData['playerLocation']['z']) / 150)
+                fanSpeed = int((1 - (calculateLength(currentData['fanLocation']['x'] - currentData['playerLocation']['x'], currentData['fanLocation']['y'] - currentData['playerLocation']['y'], currentData['fanLocation']['z'] - currentData['playerLocation']['z']) / 150)) * 100)
                 
                 try :
                     r = R.from_quat([currentData['Quaternions']['x'], currentData['Quaternions']['y'], currentData['Quaternions']['z'], currentData['Quaternions']['w']])
@@ -194,13 +214,13 @@ def job(socket):
                     print(e)
                     r = R.from_quat([1, 0, 0, 1])
                 
-                rotationMatrix = r.as_matrix()
+                rotationMatrix = r.as_matrix().T
                 print(rotationMatrix)
                 currentFanLocation = np.array([currentData['fanLocation']['x'], currentData['fanLocation']['y'], currentData['fanLocation']['z']]).T
-                newFanLocation = rotationMatrix.T.dot(currentFanLocation.T)
+                newFanLocation = rotationMatrix.dot(currentFanLocation.T)
                 
                 currentPlayerLocation = np.array([currentData['playerLocation']['x'], currentData['playerLocation']['y'], currentData['playerLocation']['z']])
-                newPlayerLocation = rotationMatrix.T.dot(currentPlayerLocation.T)
+                newPlayerLocation = rotationMatrix.dot(currentPlayerLocation.T)
                 
                 print(newFanLocation)
                 print(newPlayerLocation)
@@ -232,26 +252,29 @@ def job(socket):
                                 result = dict()
                                 topFan.hasData = True
                                 topFan.inputTime = time.time()
-                                topFan.fanSpeed = fanSpeed
+                                topFan.fanSpeed = int(fanSpeed)
+                                topFan.verticalMove = int(topMovement[1])
+                                topFan.parallelMove = int(topMovement[0])
                                 
                                 result.setdefault('sendTo', 'topArduino')
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(topMovement[1]))
                                 result.setdefault('parallelMove', int(topMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                if(topFan.needToChange(fanSpeed)) :
+                                if(topFan.needToChange(fanSpeed, int(topMovement[1]), int(topMovement[0]), time.time())) :
+                                                                        
                                     result = dict()
-                                    topFan.fanSpeed = fanSpeed
-                                    topFan.inputTime = time.time()
                                     
                                     result.setdefault('sendTo', 'topArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(topMovement[1]))
                                     result.setdefault('parallelMove', int(topMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                                 
@@ -260,25 +283,28 @@ def job(socket):
                             if(not rightFan.hasData) :
                                 result = dict()
                                 rightFan.hasData = True
-                                rightFan.fanSpeed = fanSpeed
+                                rightFan.fanSpeed = int(fanSpeed)
                                 rightFan.inputTime = time.time()
+                                rightFan.verticalMove = int(rightMovement[1])
+                                rightFan.parallelMove = int(rightMovement[0])
                                 result.setdefault('sendTo', 'rightArduino')
+                                
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(rightMovement[1]))
                                 result.setdefault('parallelMove', int(rightMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                if(rightFan.needToChange(fanSpeed)) :
+                                if(rightFan.needToChange(fanSpeed, int(rightMovement[1]), int(rightMovement[0]), time.time())) :
                                     result = dict()
-                                    rightFan.fanSpeed = fanSpeed
-                                    rightFan.inputTime = time.time()
                                     result.setdefault('sendTo', 'rightArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(rightMovement[1]))
                                     result.setdefault('parallelMove', int(rightMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                             
@@ -291,53 +317,59 @@ def job(socket):
                             if(not topFan.hasData) :
                                 result = dict()
                                 topFan.hasData = True
-                                topFan.fanSpeed = fanSpeed
+                                topFan.verticalMove = int(topMovement[1])
+                                topFan.parallelMove = int(topMovement[0])
+                                topFan.fanSpeed = int(fanSpeed)
                                 topFan.inputTime = time.time()
+                                
                                 result.setdefault('sendTo', 'topArduino')
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(topMovement[1]))
                                 result.setdefault('parallelMove', int(topMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                if(topFan.needToChange(fanSpeed)) :
+                                if(topFan.needToChange(fanSpeed, int(rightMovement[1]), int(rightMovement[0]), time.time())) :
+                                    
                                     result = dict()
-                                    topFan.fanSpeed = fanSpeed
-                                    topFan.inputTime = time.time()
                                     result.setdefault('sendTo', 'topArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(topMovement[1]))
                                     result.setdefault('parallelMove', int(topMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                         
                         if(int(leftMovement[0]) <= 20 and int(leftMovement[0]) >= -20 and int(leftMovement[1]) <= 20 and int(leftMovement[1]) >= -20):
-                            print("in")
                             if(not leftFan.hasData) :
                                 result = dict()
                                 leftFan.hasData = True
-                                leftFan.fanSpeed = fanSpeed
+                                leftFan.fanSpeed = int(fanSpeed)
                                 leftFan.inputTime = time.time()
+                                leftFan.verticalMove = int(leftMovement[1])
+                                leftFan.parallelMove = int(leftMovement[0])
+                                
                                 result.setdefault('sendTo', 'leftArduino')
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(leftMovement[1]))
                                 result.setdefault('parallelMove', int(leftMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                print("in")
-                                if(leftFan.needToChange(fanSpeed)) :
+                                if(leftFan.needToChange(fanSpeed, int(leftMovement[1]), int(leftMovement[0]), time.time())) :
+                                    
                                     result = dict()
-                                    leftFan.fanSpeed = fanSpeed
-                                    leftFan.inputTime = time.time()
                                     result.setdefault('sendTo', 'leftArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(leftMovement[1]))
                                     result.setdefault('parallelMove', int(leftMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                     
@@ -350,25 +382,28 @@ def job(socket):
                             if(not downFan.hasData) :
                                 result = dict()
                                 downFan.hasData = True
-                                downFan.fanSpeed = fanSpeed
+                                downFan.fanSpeed = int(fanSpeed)
                                 downFan.inputTime = time.time()
+                                downFan.verticalMove = int(downMovement[1])
+                                downFan.parallelMove = int(downMovement[0])
                                 result.setdefault('sendTo', 'downArduino')
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(downMovement[1]))
                                 result.setdefault('parallelMove', int(downMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                if(downFan.needToChange(fanSpeed)) :
+                                if(downFan.needToChange(fanSpeed, int(downMovement[1]), int(downMovement[0]), time.time())) :
+                                        
                                     result = dict()
-                                    downFan.fanSpeed = fanSpeed
-                                    downFan.inputTime = time.time()
                                     result.setdefault('sendTo', 'downArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(downMovement[1]))
                                     result.setdefault('parallelMove', int(downMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                         
@@ -376,26 +411,28 @@ def job(socket):
                             if(not leftFan.hasData) :
                                 result = dict()
                                 leftFan.hasData = True
-                                leftFan.fanSpeed = fanSpeed
+                                leftFan.fanSpeed = int(fanSpeed)
                                 leftFan.inputTime = time.time()
+                                leftFan.verticalMove = int(leftMovement[1])
+                                leftFan.parallelMove = int(leftMovement[0])
                                 
                                 result.setdefault('sendTo', 'leftArduino')
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(leftMovement[1]))
                                 result.setdefault('parallelMove', int(leftMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                if(leftFan.needToChange(fanSpeed)) :
+                                if(leftFan.needToChange(fanSpeed, int(leftMovement[1]), int(leftMovement[0]), time.time())) :
                                     result = dict()
-                                    leftFan.fanSpeed = fanSpeed
-                                    leftFan.inputTime = time.time()
                                     result.setdefault('sendTo', 'leftArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(leftMovement[1]))
                                     result.setdefault('parallelMove', int(leftMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                             
@@ -408,25 +445,28 @@ def job(socket):
                             if(not downFan.hasData) :
                                 result = dict()
                                 downFan.hasData = True
-                                downFan.fanSpeed = fanSpeed
+                                downFan.fanSpeed = int(fanSpeed)
                                 downFan.inputTime = time.time()
+                                downFan.verticalMove = int(downMovement[1])
+                                downFan.parallelMove = int(downMovement[0])
+                                
                                 result.setdefault('sendTo', 'downArduino')
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(downMovement[1]))
                                 result.setdefault('parallelMove', int(downMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                if(downFan.needToChange(fanSpeed)) :
+                                if(downFan.needToChange(fanSpeed, int(downMovement[1]), int(downMovement[0]), time.time())) :
                                     result = dict()
-                                    downFan.fanSpeed = fanSpeed
-                                    downFan.inputTime = time.time()
                                     result.setdefault('sendTo', 'downArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(downMovement[1]))
                                     result.setdefault('parallelMove', int(downMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                         
@@ -434,25 +474,27 @@ def job(socket):
                             if(not rightFan.hasData) :
                                 result = dict()
                                 rightFan.hasData = True
-                                rightFan.fanSpeed = fanSpeed
+                                rightFan.fanSpeed = int(fanSpeed)
                                 rightFan.inputTime = time.time()
+                                rightFan.verticalMove = int(rightMovement[1])
+                                rightFan.parallelMove = int(rightMovement[0])
                                 result.setdefault('sendTo', 'rightArduino')
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result.setdefault('verticalMove', int(rightMovement[1]))
                                 result.setdefault('parallelMove', int(rightMovement[0]))
+                                result.setdefault('waterSpary', -1)
                                 result = str(result).replace("\'", "\"") + "\n"
                                 socket.send(bytes(result, encoding = "utf8"))
                             else :
-                                if(rightFan.needToChange(fanSpeed)) :
+                                if(rightFan.needToChange(fanSpeed, int(rightMovement[1]), int(rightMovement[0]), time.time())) :
                                     result = dict()
-                                    rightFan.inputTime = time.time()
-                                    rightFan.fanSpeed = fanSpeed
                                     result.setdefault('sendTo', 'rightArduino')
                                     
                                     result.setdefault('fanSpeed', int(fanSpeed))
                                     result.setdefault('verticalMove', int(rightMovement[1]))
                                     result.setdefault('parallelMove', int(rightMovement[0]))
+                                    result.setdefault('waterSpary', -1)
                                     result = str(result).replace("\'", "\"") + "\n"
                                     socket.send(bytes(result, encoding = "utf8"))
                 except Exception as e:
@@ -464,14 +506,14 @@ def countFanClock(socket):
         currentTime = time.time()
         
         if(leftFan.hasData) :
-            if(currentTime - leftFan.inputTime > 8) :
+            if(currentTime - leftFan.inputTime > 5) :
                 result = leftFan.makeRecoverDict()
                 result = str(result).replace("\'", "\"") + "\n"
                 socket.send(bytes(result, encoding = "utf8"))
                 leftFan.hasData = False
                 
         if(rightFan.hasData) :
-            if(currentTime - rightFan.inputTime > 8) :
+            if(currentTime - rightFan.inputTime > 5) :
                 result = rightFan.makeRecoverDict()
                 result = str(result).replace("\'", "\"") + "\n"
                 socket.send(bytes(result, encoding = "utf8"))
@@ -479,14 +521,14 @@ def countFanClock(socket):
                 print("rightClose")
         
         if(topFan.hasData) :
-             if(currentTime - topFan.inputTime > 8) :
+             if(currentTime - topFan.inputTime > 5) :
                 result = topFan.makeRecoverDict()
                 result = str(result).replace("\'", "\"") + "\n"
                 socket.send(bytes(result, encoding = "utf8"))
                 topFan.hasData = False
         
         if(downFan.hasData) :
-            if(currentTime - downFan.inputTime > 8) :
+            if(currentTime - downFan.inputTime > 5) :
                 result = downFan.makeRecoverDict()
                 result = str(result).replace("\'", "\"") + "\n"
                 socket.send(bytes(result, encoding = "utf8"))
