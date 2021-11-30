@@ -114,6 +114,15 @@ def job(socket):
             fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
             socket.send(bytes(fakeAPI, encoding = "utf8"))
             
+        elif(apiNumber == 7):
+            fakeAPI = dict()
+            fakeAPI.setdefault('sendTo', 'leftArduino')
+            fakeAPI.setdefault('fanSpeed', 70)
+            fakeAPI.setdefault('verticalMove', 1)
+            fakeAPI.setdefault('parallelMove', 1)
+            fakeAPI.setdefault('waterSpary', -1)
+            fakeAPI = str(fakeAPI).replace("\'", "\"") + "\n"
+            socket.send(bytes(fakeAPI, encoding = "utf8"))
             
         elif (apiNumber == 99) :
             socket.close()
