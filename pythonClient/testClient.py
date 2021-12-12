@@ -41,6 +41,9 @@ class FanDetail:
     verticalMove = int()
     parallelMove = int()
     moveSpeed = int()
+    waterSpary = int()
+    temperature = int()
+    
     
     def __init__(self, whichFan):
         self.whichFan = whichFan
@@ -205,6 +208,8 @@ def job(socket):
                 elif(currentData['mapId'] == 2) :
                     
                     result.setdefault('sendTo', currentData['speedChange'])
+                    result.setdefault('waterSpary', -1)
+                    result.setdefault('Temperature', -1)
                     
                     if(currentData['CurrentSpeed'] + midFan.fanSpeed > 100) :
                         result.setdefault('fanSpeed', 100)
@@ -214,7 +219,24 @@ def job(socket):
                     result = str(result).replace("\'", "\"") + "\n"
                     socket.send(bytes(result, encoding = "utf8"))
                     midFan.moveSpeed = currentData['CurrentSpeed']
-            
+                    
+                    
+                elif(currentData['mapId'] == 3) :
+                    
+                    result.setdefault('sendTo', currentData['speedChange'])
+                    result.setdefault('waterSpary', currentData['WaterSpary'])
+                    result.setdefault('Temperature', currentData['Temperature'])
+                    
+                    if(currentData['CurrentSpeed'] + midFan.fanSpeed > 100) :
+                        result.setdefault('fanSpeed', 100)
+                    else :
+                        result.setdefault('fanSpeed', currentData['CurrentSpeed'] + midFan.fanSpeed)
+                    
+                    result = str(result).replace("\'", "\"") + "\n"
+                    socket.send(bytes(result, encoding = "utf8"))
+                    midFan.moveSpeed = currentData['CurrentSpeed']
+                    midFan.waterSpary = currentData['WaterSpary']
+                    midFan.temperature = currentData['Temperature']
             
             elif(currentData['speedChange'] == 'otherArduino') :
                 fanSpeed = int((1 - (calculateLength(currentData['fanLocation']['x'] - currentData['playerLocation']['x'], currentData['fanLocation']['y'] - currentData['playerLocation']['y'], currentData['fanLocation']['z'] - currentData['playerLocation']['z']) / 150)) * 100)
@@ -329,7 +351,9 @@ def job(socket):
                                 midFan.verticalMove = int(midMovement[1])
                                 midFan.parallelMove = int(midMovement[0])
                                 result.setdefault('sendTo', 'centerArduino')
-                                
+                                result.setdefault('waterSpary', currentData['WaterSpary'])
+                                result.setdefault('Temperature', currentData['Temperature'])
+
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result = str(result).replace("\'", "\"") + "\n"
@@ -338,6 +362,9 @@ def job(socket):
                                 if(midFan.needToChange(fanSpeed, int(rightMovement[1]), int(rightMovement[0]), time.time())) :
                                     result = dict()
                                     result.setdefault('sendTo', 'centerArduino')
+                                    result.setdefault('waterSpary', currentData['WaterSpary'])
+                                    result.setdefault('Temperature', currentData['Temperature'])
+                                    
                                     
                                     if(int(fanSpeed) + midFan.moveSpeed > 100) :
                                         result.setdefault('fanSpeed', 100)
@@ -426,7 +453,9 @@ def job(socket):
                                 midFan.verticalMove = int(midMovement[1])
                                 midFan.parallelMove = int(midMovement[0])
                                 result.setdefault('sendTo', 'centerArduino')
-                                
+                                result.setdefault('waterSpary', currentData['WaterSpary'])
+                                result.setdefault('Temperature', currentData['Temperature'])
+
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result = str(result).replace("\'", "\"") + "\n"
@@ -435,7 +464,9 @@ def job(socket):
                                 if(midFan.needToChange(fanSpeed, int(midMovement[1]), int(midMovement[0]), time.time())) :
                                     result = dict()
                                     result.setdefault('sendTo', 'centerArduino')
-                                    
+                                    result.setdefault('waterSpary', currentData['WaterSpary'])
+                                    result.setdefault('Temperature', currentData['Temperature'])
+
                                     if(int(fanSpeed) + midFan.moveSpeed > 100) :
                                         result.setdefault('fanSpeed', 100)
                                     else :
@@ -520,7 +551,9 @@ def job(socket):
                                 midFan.verticalMove = int(midMovement[1])
                                 midFan.parallelMove = int(midMovement[0])
                                 result.setdefault('sendTo', 'centerArduino')
-                                
+                                result.setdefault('waterSpary', currentData['WaterSpary'])
+                                result.setdefault('Temperature', currentData['Temperature'])
+
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result = str(result).replace("\'", "\"") + "\n"
@@ -529,7 +562,9 @@ def job(socket):
                                 if(midFan.needToChange(fanSpeed, int(midMovement[1]), int(midMovement[0]), time.time())) :
                                     result = dict()
                                     result.setdefault('sendTo', 'centerArduino')
-                                    
+                                    result.setdefault('waterSpary', currentData['WaterSpary'])
+                                    result.setdefault('Temperature', currentData['Temperature'])
+
                                     if(int(fanSpeed) + midFan.moveSpeed > 100) :
                                         result.setdefault('fanSpeed', 100)
                                     else :
@@ -614,7 +649,9 @@ def job(socket):
                                 midFan.verticalMove = int(midMovement[1])
                                 midFan.parallelMove = int(midMovement[0])
                                 result.setdefault('sendTo', 'centerArduino')
-                                
+                                result.setdefault('waterSpary', currentData['WaterSpary'])
+                                result.setdefault('Temperature', currentData['Temperature'])
+
                                 
                                 result.setdefault('fanSpeed', int(fanSpeed))
                                 result = str(result).replace("\'", "\"") + "\n"
@@ -623,7 +660,9 @@ def job(socket):
                                 if(midFan.needToChange(fanSpeed, int(midMovement[1]), int(midMovement[0]), time.time())) :
                                     result = dict()
                                     result.setdefault('sendTo', 'centerArduino')
-                                    
+                                    result.setdefault('waterSpary', currentData['WaterSpary'])
+                                    result.setdefault('Temperature', currentData['Temperature'])
+
                                     if(int(fanSpeed) + midFan.moveSpeed > 100) :
                                         result.setdefault('fanSpeed', 100)
                                     else :
@@ -675,6 +714,8 @@ def countFanClock(socket):
                 socket.send(bytes(result, encoding = "utf8"))
                 midFan.hasData = False
                 midFan.fanSpeed = 0
+                midFan.temperature = 0
+                midFan.waterSpary = 0
         
         
         time.sleep(1)

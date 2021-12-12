@@ -52,6 +52,10 @@ Sql = "INSERT INTO fly_in_nature.Map (`name`) VALUES ('herry_potter')"
 cur.execute(Sql)
 conn.commit()
 
+Sql = "INSERT INTO fly_in_nature.Map (`name`) VALUES ('cave_maze')"
+cur.execute(Sql)
+conn.commit()
+
 
 sql = 'CREATE TABLE `Race_Record` (' + \
     '`id` int(11) NOT NULL AUTO_INCREMENT,' + \
